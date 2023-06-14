@@ -32,7 +32,7 @@ def infer(inp):
     X = inp["input_ids"].to(device)
     a = inp["attention_mask"].to(device)
     output = model.generate(X, attention_mask=a,
-        max_length=60, 
+        max_length=85, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1

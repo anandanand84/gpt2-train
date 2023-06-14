@@ -1,12 +1,15 @@
 from torch.utils.data import Dataset
+from torch.utils.tensorboard import SummaryWriter
+
 import json
 
 INSTRUCTION = "<jsonconvert>"
 
 BATCH_SIZE = 128
 
-EPOCHS = 50
+EPOCHS = 200
 
+writer = SummaryWriter()
 
 class TrainingData(Dataset):
     def __init__(self, path:str, synthpath:str, tokenizer):
@@ -17,9 +20,9 @@ class TrainingData(Dataset):
         print(len(self.data))
         for i, data in enumerate(self.data):
            self.X.append("<startofstring> " + INSTRUCTION + " " +data['input']+" <bot>: "+json.dumps(data['output'])+" <endofstring>")
-        self.X = self.X[:50000]
+        self.X = self.X[:20000]
         print(len(self.X))
-        self.X_encoded = tokenizer(self.X, max_length=60, truncation=False, padding="max_length", return_tensors="pt")
+        self.X_encoded = tokenizer(self.X, max_length=85, truncation=False, padding="max_length", return_tensors="pt")
         self.input_ids = self.X_encoded['input_ids']
         self.attention_mask = self.X_encoded['attention_mask']
         
@@ -39,8 +42,10 @@ import torch
 from flask import Flask, jsonify, request
 app = Flask(__name__)
 
+
 def train(training_data, model, optim):
     epochs = EPOCHS
+    iterations = 0
     for i in tqdm.tqdm(range(epochs)):
         for X, a in training_data:
             X = X.to(device)
@@ -49,6 +54,8 @@ def train(training_data, model, optim):
             loss = model(X, attention_mask=a, labels=X).loss
             loss.backward()
             optim.step()
+            iterations += 1
+            writer.add_scalar('Loss/train', loss.item(), iterations)
         torch.save(model.state_dict(), "model_state.pt")
     print(infer("sell 100.25 worth of solana"))
 
@@ -101,9 +108,9 @@ def process_endpoint():
 print("training .... ")
 
 train(training_data, model, optim)
+
+app.run()
+
+writer.close()
 model.eval()
 
-
-print("infer from model : ")
-if __name__ == '__main__':
-    app.run(debug=True)

@@ -1,4 +1,8 @@
 [
+    {"input" : "convert 300.2 ETH for CAD" , "output" : {"baseAsset": "ETH", "side": "SELL", "qty": 300.2, "quoteAsset": "CAD"} },
+    {"input" : "convert 300.2 ETH to CAD" , "output" : {"baseAsset": "ETH", "side": "SELL", "qty": 300.2, "quoteAsset": "CAD"} },
+    {"input" : "convert to ETH 300 CAD" , "output" : {"baseAsset": "ETH", "side": "BUY", "value": 300.2, "quoteAsset": "CAD"} },
+    {"input" : "convert 300 CAD to ETH" , "output" : {"baseAsset": "ETH", "side": "BUY", "value": 300.2, "quoteAsset": "CAD"} },
     {"input" : "sell 100.25 worth of solana" , "output" : {"baseAsset": "SOL", "side": "SELL", "value": 100.25, "quoteAsset": "USD"} },
     {"input" : "quote for selling 25 solana" , "output" : {"baseAsset": "SOL", "side": "SELL", "value": 100.25, "quoteAsset": "USD"} },
     {"input" : "price for 100k USDT, buying" , "output" : {"baseAsset": "USDT", "side": "BUY", "qty": 100000, "quoteAsset": "USD"} },
