@@ -5,7 +5,7 @@ import json
 
 INSTRUCTION = "<jsonconvert>"
 
-BATCH_SIZE = 128
+BATCH_SIZE = 8
 
 EPOCHS = 200
 
@@ -34,7 +34,8 @@ class TrainingData(Dataset):
 
 
 
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 import tqdm
@@ -74,15 +75,15 @@ def infer(inp):
 
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
-model_name = "gpt2"
+model_name = "EleutherAI/gpt-j-6B"
 
-tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.add_special_tokens({"pad_token": "<pad>", 
                                 "bos_token": "<startofstring>",
                                 "eos_token": "<endofstring>"})
 tokenizer.add_tokens(["<bot>:"])
 
-model = GPT2LMHeadModel.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 model.resize_token_embeddings(len(tokenizer))
 
 model = model.to(device)
