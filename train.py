@@ -1,21 +1,25 @@
 from torch.utils.data import Dataset
 import json
 
-INSTRUCTION = "Parse to JSON"
+INSTRUCTION = "<jsonconvert>"
 
-BATCH_SIZE = 64
+BATCH_SIZE = 128
+
+EPOCHS = 50
+
 
 class TrainingData(Dataset):
     def __init__(self, path:str, synthpath:str, tokenizer):
         self.data = json.load(open(path, "r"))
         self.data_synth = json.load(open(synthpath, "r"))
         self.data.extend(self.data_synth)
-        print(len(self.data))
         self.X = []
+        print(len(self.data))
         for i, data in enumerate(self.data):
            self.X.append("<startofstring> " + INSTRUCTION + " " +data['input']+" <bot>: "+json.dumps(data['output'])+" <endofstring>")
-        self.X = self.X[:10000]
-        self.X_encoded = tokenizer(self.X, max_length=150, truncation=False, padding="max_length", return_tensors="pt")
+        self.X = self.X[:50000]
+        print(len(self.X))
+        self.X_encoded = tokenizer(self.X, max_length=60, truncation=False, padding="max_length", return_tensors="pt")
         self.input_ids = self.X_encoded['input_ids']
         self.attention_mask = self.X_encoded['attention_mask']
         
@@ -36,7 +40,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 def train(training_data, model, optim):
-    epochs = 100
+    epochs = EPOCHS
     for i in tqdm.tqdm(range(epochs)):
         for X, a in training_data:
             X = X.to(device)
@@ -53,7 +57,7 @@ def infer(inp):
     inp = tokenizer(inp, return_tensors="pt")
     X = inp["input_ids"].to(device)
     a = inp["attention_mask"].to(device)
-    output = model.generate(X, max_length=200, 
+    output = model.generate(X, max_length=60, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1)

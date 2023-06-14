@@ -5,7 +5,7 @@ import tqdm
 import torch
 from flask import Flask, jsonify, request
 
-INSTRUCTION = "Parse to JSON"
+INSTRUCTION = "<jsonconvert>"
 
 app = Flask(__name__)
 
@@ -32,7 +32,7 @@ def infer(inp):
     X = inp["input_ids"].to(device)
     a = inp["attention_mask"].to(device)
     output = model.generate(X, attention_mask=a,
-        max_length=120, 
+        max_length=60, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1

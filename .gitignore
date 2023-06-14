@@ -1,3 +1,5 @@
 models/
 output/
 __pycache__/
+synth.json
+model_state.pt
