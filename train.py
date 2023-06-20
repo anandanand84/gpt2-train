@@ -9,6 +9,8 @@ BATCH_SIZE = 8
 
 EPOCHS = 200
 
+model_name = "EleutherAI/gpt-j-6B"
+
 writer = SummaryWriter()
 
 class TrainingData(Dataset):
@@ -74,8 +76,6 @@ def infer(inp):
 
 
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-
-model_name = "EleutherAI/gpt-j-6B"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.add_special_tokens({"pad_token": "<pad>", 

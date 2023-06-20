@@ -1,6 +1,6 @@
 import json
 
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import tqdm
 import torch
 from flask import Flask, jsonify, request
@@ -11,15 +11,15 @@ app = Flask(__name__)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model_name = "gpt2"
+model_name = "gpt2-xl"
 
-tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 tokenizer.add_special_tokens({"pad_token": "<pad>", 
                                 "bos_token": "<startofstring>",
                                 "eos_token": "<endofstring>"})
 tokenizer.add_tokens(["<bot>:"])
 
-model = GPT2LMHeadModel.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 model.resize_token_embeddings(len(tokenizer))
 model.load_state_dict(torch.load("model_state.pt", map_location=device))
 model = model.to(device)

@@ -1,4 +1,5 @@
 models/
+outputs/
 output/
 __pycache__/
 synth.json
