@@ -100,35 +100,35 @@ def rounded_value(value):
     else:
         return value
 
-
-for asset in assets:
-    value = random.uniform(100, 6000000) 
-    qty = value
-    if random.random() < 0.12 and value > 10000:
-        value = rounded_value(value)
+for i in range(1,2):
+    for asset in assets:
+        value = random.uniform(100, 6000000) 
         qty = value
-        value_rounded = format_value(value)
-        qty_rounded = format_value(qty)
-    else:
-        value_rounded = value
-        qty_rounded = qty
-    
-    for template in buy_qty_templates:
-        quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
-        sentence = template.format(asset=asset, qty=qty_rounded, quote_asset=quote_asset)
-        synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "BUY", "qty": qty, "quoteAsset": quote_asset}})
-    for template in buy_value_templates:
-        quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
-        sentence = template.format(asset=asset, value=value_rounded, quote_asset=quote_asset)
-        synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "BUY", "value": value, "quoteAsset": quote_asset}})
-    for template in sell_qty_templates:
-        quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
-        sentence = template.format(asset=asset, qty=qty_rounded, quote_asset=quote_asset)
-        synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "SELL", "qty": qty, "quoteAsset": quote_asset}})
-    for template in sell_value_templates:
-        quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
-        sentence = template.format(asset=asset, value=value_rounded, quote_asset=quote_asset)
-        synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "SELL", "value": value, "quoteAsset": quote_asset}})
+        if random.random() < 0.12 and value > 10000:
+            value = rounded_value(value)
+            qty = value
+            value_rounded = format_value(value)
+            qty_rounded = format_value(qty)
+        else:
+            value_rounded = value
+            qty_rounded = qty
+        
+        for template in buy_qty_templates:
+            quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
+            sentence = template.format(asset=asset, qty=qty_rounded, quote_asset=quote_asset)
+            synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "BUY", "qty": qty, "quoteAsset": quote_asset}})
+        for template in buy_value_templates:
+            quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
+            sentence = template.format(asset=asset, value=value_rounded, quote_asset=quote_asset)
+            synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "BUY", "value": value, "quoteAsset": quote_asset}})
+        for template in sell_qty_templates:
+            quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
+            sentence = template.format(asset=asset, qty=qty_rounded, quote_asset=quote_asset)
+            synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "SELL", "qty": qty, "quoteAsset": quote_asset}})
+        for template in sell_value_templates:
+            quote_asset = random.choice(quote_assets) if '{quote_asset}' in template else "USD"
+            sentence = template.format(asset=asset, value=value_rounded, quote_asset=quote_asset)
+            synthetic_data.append({"input": sentence, "output": {"baseAsset": asset, "side": "SELL", "value": value, "quoteAsset": quote_asset}})
 
             
 synths = json.dumps(synthetic_data, indent=0)

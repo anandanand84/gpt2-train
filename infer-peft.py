@@ -6,8 +6,17 @@ from instruction_template import template
 model_id = "EleutherAI/gpt-j-6b"
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = AutoModelForCausalLM.from_pretrained(model_id)
-model = model.to(device)
+
+MAX_LENGTH = 150
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=False,
+    load_in_8bit=True,
+    bnb_4bit_use_double_quant=True
+)
+
+model = AutoModelForCausalLM.from_pretrained(model_id, max_length=MAX_LENGTH, quantization_config=bnb_config, device_map={"":0})
+
 model.eval()
 
 app = Flask(__name__)
@@ -15,13 +24,12 @@ app = Flask(__name__)
 from peft import LoraConfig, get_peft_model
 lora_config = LoraConfig.from_pretrained('outputs')
 model = get_peft_model(model, lora_config)
-print(model)
 
 def infer(input):
-    text = template(input)
+    text = template(input, output="")
     inputs = tokenizer(text, return_tensors="pt").to(device)
     output = model.generate(**inputs,
-        max_length=250, 
+        max_length=MAX_LENGTH, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1

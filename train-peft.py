@@ -11,33 +11,24 @@ model_id = "EleutherAI/gpt-j-6b"
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=False,
     load_in_8bit=True,
-    bnb_4bit_use_double_quant=False
+    bnb_4bit_use_double_quant=True
 )
+
+MAX_LENGTH = 150
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-"""Let's load a common dataset, english quotes, to fine tune our model on famous quotes."""
-
-from datasets import load_dataset
-
-
-# data = load_dataset("Abirate/english_quotes")
-# data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
-
-# data1 = load_dataset("Abirate/english_quotes")
-# data1["train"][0]
-
-INSTRUCTION = "Parse instruction below and extract information in json format with keys side, baseAsset, quoteAsset, qty or value."
+tokenizer.pad_token = tokenizer.eos_token
 
 from datasets import load_from_disk, load_dataset
 import json
-data = load_dataset('json', data_files=['training_data.json', 'synth.json'])
-data = data.map(lambda sample: tokenizer(template(input=sample['input'], output=json.dumps(sample['output']))))
+data = load_dataset('json', data_files=['training_data.json'])
+data = data.map(lambda sample: tokenizer(template(input=sample['input'], output=json.dumps(sample['output'])), max_length=MAX_LENGTH, truncation=True, padding="max_length"))
 
 print(data["train"][0])
 
 
-model = AutoModelForCausalLM.from_pretrained(model_id, device_map={"":0})
+model = AutoModelForCausalLM.from_pretrained(model_id, max_length=MAX_LENGTH, quantization_config=bnb_config, device_map={"":0})
 
 from peft import prepare_model_for_kbit_training
 
@@ -60,10 +51,10 @@ def print_trainable_parameters(model):
     )
 
 from peft import LoraConfig, get_peft_model
-print(model)
+# print(model)
 config = LoraConfig(
-    r=8,
-    lora_alpha=32,
+    r=128,
+    lora_alpha=128,
     target_modules=["k_proj", "v_proj", "q_proj"],
     lora_dropout=0.05,
     bias="none",
@@ -84,12 +75,12 @@ trainer = transformers.Trainer(
     model=model,
     train_dataset=data["train"],
     args=transformers.TrainingArguments(
-        per_device_train_batch_size=1,
-        gradient_accumulation_steps=1,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=2,
         warmup_steps=2,
-        max_steps=1000,
-        learning_rate=0.01,
-        logging_steps=4,
+        max_steps=3000,
+        learning_rate=0.001,
+        logging_steps=1,
         output_dir="outputs",
         optim="adamw_torch"
     ),
@@ -110,7 +101,7 @@ device = "cuda:0"
 
 inputs = tokenizer(text, return_tensors="pt").to(device)
 outputs = model.generate(**inputs,
-        max_length=250, 
+        max_length=MAX_LENGTH, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1
