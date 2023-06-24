@@ -1,12 +1,12 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, T5Tokenizer
 from configs import MODEL_ID
 
 START_OF_STRING = "<startofstring>"
 END_OF_STRING = "<endofstring>"
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-tokenizer.add_special_tokens({"pad_token": "<pad>",  "bos_token": START_OF_STRING, "eos_token": END_OF_STRING})
-tokenizer.add_tokens(["<bot>:"])
+tokenizer = T5Tokenizer.from_pretrained(MODEL_ID)
+# tokenizer.add_special_tokens({"pad_token": "<pad>",  "bos_token": START_OF_STRING, "eos_token": END_OF_STRING})
+# tokenizer.add_tokens(["<bot>:"])
 
 ###
 # This is the template for the instruction should be called with a sample from the dataset containing input and output

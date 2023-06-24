@@ -13,19 +13,25 @@ Original file is located at
 # !wget https://raw.githubusercontent.com/anandanand84/gpt2-train/main/synth.json
 
 from datasets import load_dataset, load_from_disk, DatasetDict
-from transformers import AutoModelForCausalLM
+from transformers import T5ForConditionalGeneration, Trainer, TrainingArguments, T5Tokenizer
 from configs import MODEL_ID, MAX_LENGTH, BNB_CONFIG, BATCH_SIZE
 from instruction_template import template, tokenizer, template_inference
 from trl import SFTTrainer
 from peft import LoraConfig
 from transformers import TrainingArguments
 import json
+from configs import MODEL_ID, MAX_LENGTH, BNB_CONFIG, BATCH_SIZE
+from instruction_template import template
+
+
 
 # Load dataset
 def train():
     # ={ 'train' : 'training_data.json', 'test' : 'synth.json' 
-    dataset = load_dataset('json', data_files = ['training_data.json', 'synth.json'])
-    print(len(dataset['train']))
+    # tokenizer = T5Tokenizer.from_pretrained(MODEL_ID)
+    data = load_dataset('json', data_files=['training_data.json'])
+    data = data.map(lambda sample: tokenizer(template(sample), truncation=True, padding='max_length', max_length=128))
+    print(data['train'][0])
     peft_config = LoraConfig(
         r=64,
         lora_alpha=64,
@@ -34,10 +40,11 @@ def train():
         task_type="CAUSAL_LM",
     )
 
+    model = T5ForConditionalGeneration.from_pretrained(MODEL_ID)
     # create TrainingArguments
     training_args = TrainingArguments(
         output_dir='./results',
-        num_train_epochs=100,
+        num_train_epochs=5,
         logging_steps=50, 
         learning_rate=1e-4,
         save_steps=1000,
@@ -46,17 +53,10 @@ def train():
         # add other arguments as needed
     )
 
-    model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-    model.resize_token_embeddings(len(tokenizer))
-
-    trainer = SFTTrainer(
+    trainer = Trainer(
         model=model,
-        train_dataset=dataset['train'],
+        train_dataset=data['train'],
         args=training_args,  # the training arguments
-        max_seq_length=MAX_LENGTH,
-        packing=True,
-        formatting_func=template,
-        dataset_text_field="text"
     )
 
     trainer.train()
@@ -65,9 +65,8 @@ def train():
 
 def infer():
     model = AutoModelForCausalLM.from_pretrained('sft-model')
-    model.resize_token_embeddings(len(tokenizer))
     # lora_config = LoraConfig.from_pretrained("sft-model")
-    text = template_inference("give me a quote for 10 BTC?")
+    text = template_inference("<jsonconvert>give me a quote for 10 BTC?")
     tokens = tokenizer(text, return_tensors='pt')
     output = model.generate(**tokens, max_length=100, temperature=0.7, num_return_sequences=1)
     generated_text = tokenizer.decode(output[0], skip_special_tokens=True)

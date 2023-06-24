@@ -100,7 +100,7 @@ def rounded_value(value):
     else:
         return value
 
-for i in range(1,2):
+for i in range(1,5):
     for asset in assets:
         value = random.uniform(100, 6000000) 
         qty = value
