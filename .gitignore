@@ -5,3 +5,4 @@ __pycache__/
 synth.json
 model_state.pt
 runs/
+sft-model/

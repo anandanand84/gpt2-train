@@ -5,11 +5,11 @@ import json
 
 INSTRUCTION = "<jsonconvert>"
 
-BATCH_SIZE = 8
+BATCH_SIZE = 64
 
-EPOCHS = 200
+EPOCHS = 10000
 
-model_name = "EleutherAI/gpt-j-6B"
+model_name = "gpt2"
 
 writer = SummaryWriter()
 
@@ -59,6 +59,7 @@ def train(training_data, model, optim):
             optim.step()
             iterations += 1
             writer.add_scalar('Loss/train', loss.item(), iterations)
+            print(iterations, ' iteration loss', loss.item())
         torch.save(model.state_dict(), "model_state.pt")
     print(infer("sell 100.25 worth of solana"))
 
@@ -67,7 +68,7 @@ def infer(inp):
     inp = tokenizer(inp, return_tensors="pt")
     X = inp["input_ids"].to(device)
     a = inp["attention_mask"].to(device)
-    output = model.generate(X, max_length=60, 
+    output = model.generate(X, attention_mask=a, max_length=60, 
         top_k=0, 
         top_p=0.95, 
         num_return_sequences=1)
@@ -77,7 +78,7 @@ def infer(inp):
 
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, )
 tokenizer.add_special_tokens({"pad_token": "<pad>", 
                                 "bos_token": "<startofstring>",
                                 "eos_token": "<endofstring>"})
@@ -85,6 +86,11 @@ tokenizer.add_tokens(["<bot>:"])
 
 model = AutoModelForCausalLM.from_pretrained(model_name)
 model.resize_token_embeddings(len(tokenizer))
+
+# from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
+
+# model.gradient_checkpointing_enable()
+# model = prepare_model_for_kbit_training(model)
 
 model = model.to(device)
 

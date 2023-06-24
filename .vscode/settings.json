@@ -1,0 +1,33 @@
+{
+    "svelte.enable-ts-plugin": true,
+    "explorer.confirmDelete": false,
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "svelte.plugin.svelte.note-new-transformation": false,
+    "notebook.cellToolbarLocation": {
+        "default": "right",
+        "jupyter-notebook": "left"
+    },
+    "solidity.telemetry": true,
+    "editor.inlineSuggest.enabled": true,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "remote.SSH.remotePlatform": {
+        "sandbox.vglb59.csb": "linux"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "python.language.server": "Pylance",
+    "python.languageServer": "Pylance",
+    "[python]": {
+        "editor.formatOnType": true
+    },
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "easycode.userEmail": "anand.anand84@gmail.com",
+    "git.enableSmartCommit": true,
+    "window.zoomLevel": -1,
+    "[nginx]": {
+        "editor.defaultFormatter": "ahmadalli.vscode-nginx-conf"
+    }
+}

@@ -2,31 +2,30 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from flask import Flask, jsonify, request
 import torch 
 from instruction_template import template
+from configs import MAX_LENGTH, MODEL_ID, BNB_CONFIG
 
-model_id = "EleutherAI/gpt-j-6b"
+model_id = MODEL_ID
 tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer.pad_token = tokenizer.eos_token
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-MAX_LENGTH = 150
+bnb_config = BNB_CONFIG
 
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=False,
-    load_in_8bit=True,
-    bnb_4bit_use_double_quant=True
-)
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 model = AutoModelForCausalLM.from_pretrained(model_id, max_length=MAX_LENGTH, quantization_config=bnb_config, device_map={"":0})
-
+model.gradient_checkpointing_enable()
+model = prepare_model_for_kbit_training(model)
 model.eval()
 
 app = Flask(__name__)
 
-from peft import LoraConfig, get_peft_model
 lora_config = LoraConfig.from_pretrained('outputs')
 model = get_peft_model(model, lora_config)
 
 def infer(input):
-    text = template(input, output="")
+    text = template(input, "")
     inputs = tokenizer(text, return_tensors="pt").to(device)
     output = model.generate(**inputs,
         max_length=MAX_LENGTH, 
